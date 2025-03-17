@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "WSL",
+            "includePath": [
+                "/usr/include/**"
+            ],
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/g++"
+        }
+    ],
+    "version": 4
+}

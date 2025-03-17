@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+systemctl stop agent.service || true
+systemctl disable agent.service || true
+rm -f /etc/monitoring_agent.conf

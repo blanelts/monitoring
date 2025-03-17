@@ -1,0 +1,29 @@
+#!/bin/bash
+
+set -e
+
+# Используем переменные окружения, если они заданы, иначе запрашиваем у пользователя
+SERVER_NAME=${SERVER_NAME:-$(read -p "Введите имя сервера (server_name): " val && echo "$val")}
+INTERFACE=${INTERFACE:-$(read -p "Введите сетевой интерфейс (например eth0): " val && echo "$val")}
+MOUNT=${MOUNT:-$(read -p "Введите точку монтирования (например /): " val && echo "$val")}
+URL=${URL:-$(read -p "Введите URL сервера (например http://localhost:5000/report): " val && echo "$val")}
+TIME=${TIME:-$(read -p "Введите интервал сбора данных (в секундах): " val && echo "$val")}
+
+# Создаем конфигурационный файл
+cat <<EOF > /etc/monitoring_agent.conf
+SERVER_NAME="$SERVER_NAME"
+INTERFACE="$INTERFACE"
+MOUNT="$MOUNT"
+URL="$URL"
+TIME="$TIME"
+EOF
+
+# Выдача прав
+chmod 644 /etc/monitoring_agent.conf
+
+# Перезапуск systemd-сервиса
+systemctl daemon-reload
+systemctl enable agent.service
+systemctl restart agent.service
+
+echo "Установка завершена. Monitoring Agent успешно запущен."

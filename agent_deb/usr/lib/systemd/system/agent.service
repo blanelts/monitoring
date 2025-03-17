@@ -1,0 +1,16 @@
+[Unit]
+Description=Monitoring Agent Service
+After=network.target
+
+[Service]
+EnvironmentFile=/etc/monitoring_agent.conf
+ExecStart=/usr/bin/agent -n ${SERVER_NAME} \
+                         -i ${INTERFACE} \
+                         -m ${MOUNT} \
+                         -u ${URL} \
+                         -t ${TIME}
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

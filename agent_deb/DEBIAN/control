@@ -1,0 +1,8 @@
+Package: monitoring-agent
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: libc6
+Maintainer: Blane <BlaneLTS@gmail.com>
+Description: Monitoring Agent for collecting system data
