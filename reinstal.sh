@@ -1,6 +1,6 @@
 #!/bin/bash
 sudo \
-SERVER_NAME="Test" \
+SERVER_NAME="$(hostname)" \
 INTERFACE="eth0" \
 MOUNT="/" \
 URL="http://192.168.160.37:5050/report" \
