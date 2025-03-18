@@ -21,11 +21,11 @@ ssh "${USER}@${HOST}" << EOF
   echo "Восстанавливаем локальные изменения..."
   git stash pop || echo "Восстановить нечего (stash был пуст). Продолжаем..."
 
-  echo "Заменяем порт 5000 на ${NEW_PORT} в docker-compose.yml..."
-  sed -i 's/5000:5000/${NEW_PORT}:5000/g' docker-compose.yml
-  
   echo "Переходим в папку сервера"
   cd ./server
+
+  echo "Заменяем порт 5000 на ${NEW_PORT} в docker-compose.yml..."
+  sed -i 's/5000:5000/${NEW_PORT}:5000/g' docker-compose.yml
 
   echo "Останавливаем старые контейнеры..."
   docker-compose down
