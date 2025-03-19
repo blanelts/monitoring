@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #ifdef _WIN32
   #include <Winsock2.h>
   #include <windows.h>
@@ -166,6 +167,28 @@ std::pair<int, int> getDiskInfoForMount(const std::string &mount) {
         #endif
     }
 
+// Сбор информации о запущенных Docker-контейнерах
+json getDockerContainersInfo() {
+    json containers = json::array();
+    FILE* pipe = popen(R"(docker ps --format "{\"id\":\"{{.ID}}\",\"image\":\"{{.Image}}\",\"name\":\"{{.Names}}\",\"status\":\"{{.Status}}\"}")", "r");
+    if (!pipe) {
+        perror("popen");
+        return containers;
+    }
+
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        try {
+            json container = json::parse(buffer);
+            containers.push_back(container);
+        } catch (const std::exception &e) {
+            std::cerr << "Ошибка парсинга JSON: " << e.what() << std::endl;
+        }
+    }
+    pclose(pipe);
+    return containers;
+}
+
 int main(int argc, char* argv[]) {
     // Значения по умолчанию
     std::string serverName = getHostname();
@@ -224,6 +247,7 @@ int main(int argc, char* argv[]) {
         data["disk_free"] = disk.first;
         data["disk_total"] = disk.second;
         data["os_info"] = getOSInfo();
+        data["containers"] = getDockerContainersInfo();
 
         std::cout << "Собранные данные:\n" << data.dump(4) << std::endl;
 

@@ -64,6 +64,21 @@
                 </div>
             </div>
         </div>
+        <div id="containersContainer" class="mt-4" style="display:none;">
+            <h3>Контейнеры на сервере: <span id="containersServerName"></span></h3>
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th>Container ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="containers-body"></tbody>
+            </table>
+        </div>
+        
         <table class="table table-dark table-striped mt-4">
             <thead>
                 <tr>
@@ -84,6 +99,10 @@
         const cpuChartCtx = document.getElementById('cpuChart').getContext('2d');
         const memoryChartCtx = document.getElementById('memoryChart').getContext('2d');
         const chartsContainer = document.getElementById("chartsContainer");
+        const containersContainer = document.getElementById("containersContainer");
+        const containersServerInfo = document.getElementById("containersServerInfo");
+        const containersBody = document.getElementById("containers-body");
+
 
         let cpuChart = new Chart(cpuChartCtx, {
             type: 'line',
@@ -117,10 +136,11 @@
                 .then(data => {
                     const tableBody = document.getElementById("stats-body");
                     tableBody.innerHTML = "";
+        
                     data.forEach(row => {
                         const lastSeen = Math.round(row.last_seen);
                         const isOffline = lastSeen > 60;
-
+        
                         const tr = document.createElement("tr");
                         tr.innerHTML = `
                             <td>${row.hostname}</td>
@@ -131,33 +151,26 @@
                             <td>${row.disk_free} / ${row.disk_total - row.disk_free} / ${row.disk_total}</td>
                             <td>${lastSeen} sec. ago</td>
                         `;
-                        
+        
                         tr.classList.toggle("offline", isOffline);
-                        if (isOffline) {
-                            tr.style.color = "red";
-                        } else {
-                            tr.style.color = "white";
-                        }
-
+                        tr.style.color = isOffline ? "red" : "white";
+        
                         tr.addEventListener("click", (event) => {
-                            event.stopPropagation(); // Предотвращаем всплытие, чтобы не срабатывал клик по body
+                            event.stopPropagation();
                             selectAgent(row.ip_address, tr);
+                            displayContainers(row.containers || [], row.hostname, row.ip_address);
                         });
-
+        
                         if (row.ip_address === selectedAgent) {
                             tr.classList.add("selected");
-        
-                            // Показываем графики, чтобы не исчезали
-                            chartsContainer.style.display = "block"; 
-        
-                            // Выводим в шапку выбранного сервера (если не делали этого раньше):
+                            chartsContainer.style.display = "block";
                             document.getElementById("selectedServerInfo").innerHTML =
                                 `<b>${row.hostname}</b> (${row.ip_address})`;
                         }
-
+        
                         tableBody.appendChild(tr);
                     });
-
+        
                     if (selectedAgent) {
                         fetchAgentStats(selectedAgent);
                     }
@@ -205,6 +218,33 @@
                 })
                 .catch(error => console.error('Ошибка загрузки данных:', error));
         }
+
+        function displayContainers(containers, hostname, ip) {
+            const containersContainer = document.getElementById("containersContainer");
+            const containersBody = document.getElementById("containers-body");
+            const containersServerInfo = document.getElementById("containersServerInfo");
+        
+            containersContainer.style.display = "block"; // Показываем контейнеры
+            containersServerInfo.innerText = `${hostname} (${ipAddress})`; // Отображаем сервер
+        
+            containersBody.innerHTML = ''; // Очищаем предыдущие данные
+        
+            if (containers && containers.length > 0) {
+                containers.forEach(container => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${container.id}</td>
+                        <td>${container.image}</td>
+                        <td>${container.name}</td>
+                        <td>${container.status}</td>
+                    `;
+                    containersBody.appendChild(tr);
+                });
+            } else {
+                containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
+            }
+        }
+        
 
         // Добавляем обработчик, который скрывает графики при клике вне таблицы и графиков
         document.body.addEventListener("click", () => {

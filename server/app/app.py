@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+import json
 
 app = Flask(__name__)
 
@@ -28,18 +29,21 @@ def receive_report():
     data = request.get_json()
     if not data:
         return jsonify({"error": "Invalid JSON"}), 400
-    
+
+    containers = data.get("containers", [])
+
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
         INSERT INTO server_stats 
-        (hostname, ip_address, cpu_usage, memory_used, memory_total, disk_free, disk_total, os_info, last_update)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+        (hostname, ip_address, cpu_usage, memory_used, memory_total, disk_free, disk_total, os_info, containers, last_update)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
         """,
         (data["hostname"], data["ip_address"], data["cpu_usage"],
          data["memory_used"], data["memory_total"],
-         data["disk_free"], data["disk_total"], data["os_info"]))
+         data["disk_free"], data["disk_total"], data["os_info"],
+         json.dumps(containers)))  # Не забудьте импортировать модуль json
         conn.commit()
         cur.close()
         conn.close()
@@ -82,7 +86,8 @@ def get_agent_stats(ip_address):
         cur = conn.cursor()
         cur.execute("""
             SELECT cpu_usage, memory_used, 
-                   ROUND(EXTRACT(EPOCH FROM last_update) * 1000) AS last_update
+                   ROUND(EXTRACT(EPOCH FROM last_update) * 1000) AS last_update,
+                   containers
             FROM server_stats
             WHERE ip_address = %s
             ORDER BY id DESC
