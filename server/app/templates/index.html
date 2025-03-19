@@ -68,6 +68,7 @@
                 <tr>
                     <th>Hostname</th>
                     <th>IP Address</th>
+                    <th>OS Info</th>
                     <th>CPU Usage (%)</th>
                     <th>Memory Used (MB)</th>
                     <th>Memory Total (MB)</th>
@@ -125,6 +126,7 @@
                         tr.innerHTML = `
                             <td>${row.hostname}</td>
                             <td>${row.ip_address}</td>
+                            <td>${row.os_info}</td>
                             <td>${row.cpu_usage}</td>
                             <td>${row.memory_used}</td>
                             <td>${row.memory_total}</td>
