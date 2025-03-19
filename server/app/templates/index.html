@@ -298,21 +298,19 @@
             const runnerJob = document.getElementById("runnerJob");
             const gitlabRunnerTableBody = document.getElementById("gitlabRunnerTableBody");
         
-            // Сначала прячем контейнер – будем показывать его только если Runner есть
+            // Изначально прячем блок, чтобы он не показывался по умолчанию
             gitlabRunnerContainer.style.display = "none";
-            gitlabRunnerError.innerHTML = "";
+            gitlabRunnerError.textContent = "";
             gitlabRunnerData.style.display = "none";
         
-            // Если Runner не пришёл или состояние unknown — НЕ показываем блок, 
-            // просто выводим короткую фразу (или можно ничего не показывать)
+            // Если gitlab_runner отсутствует или статус 'unknown' – 
+            // просто выходим (ничего не выводим) или выводим короткое сообщение
             if (!gitlabRunner || gitlabRunner.active === "unknown") {
-                // Например, просто выводим где-нибудь сообщение:
                 console.log("gitlab-runner отсутствует на сервере...");
-                // Или можно сделать alert или вставить в отдельный div
                 return;
             }
         
-            // Если дошли сюда — Runner есть, показываем блок
+            // Если Runner есть и он не 'unknown', показываем блок и заполняем детальной информацией
             gitlabRunnerContainer.style.display = "block";
             gitlabRunnerData.style.display = "block";
             gitlabRunnerServerName.innerText = `${hostname} (${ip})`;
@@ -323,7 +321,7 @@
             runnerStartTime.textContent = gitlabRunner.start_time || "-";
             runnerJob.textContent = gitlabRunner.job || "-";
         
-            // Заполняем таблицу раннеров
+            // Обновляем список зарегистрированных раннеров
             gitlabRunnerTableBody.innerHTML = "";
             const runners = gitlabRunner.runners || [];
             if (runners.length > 0) {
@@ -340,9 +338,7 @@
                 gitlabRunnerTableBody.innerHTML =
                     '<tr><td colspan="3">Нет зарегистрированных раннеров</td></tr>';
             }
-        }
-        
-
+        }        
         
         function latestContainers(data) {
             for (let entry of data) {
