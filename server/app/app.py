@@ -57,20 +57,23 @@ def get_stats():
                 SELECT *, ROW_NUMBER() OVER (PARTITION BY ip_address ORDER BY id DESC) AS row_num
                 FROM server_stats
             )
-            SELECT hostname, ip_address, cpu_usage, memory_used, memory_total, disk_free, disk_total, last_update,
-                   EXTRACT(EPOCH FROM (NOW() - last_update)) AS last_seen
-            FROM ranked_stats WHERE row_num = 1;
+            SELECT hostname, ip_address, cpu_usage, memory_used, memory_total, 
+                   disk_free, disk_total, os_info,
+                   last_update, EXTRACT(EPOCH FROM (NOW() - last_update)) AS last_seen
+            FROM ranked_stats
+            WHERE row_num = 1;
         """)
         rows = cur.fetchall()
         cur.close()
         conn.close()
-        
+
         for row in rows:
             row["status"] = "online" if row["last_seen"] < 60 else "offline"
-        
+
         return jsonify(rows)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/stats/<ip_address>", methods=["GET"])
 def get_agent_stats(ip_address):
