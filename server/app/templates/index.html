@@ -129,6 +129,8 @@
         });
 
         let selectedAgent = null;
+        let selectedHostname = null;
+
 
         function fetchStats() {
             fetch('/stats')
@@ -157,9 +159,9 @@
         
                         tr.addEventListener("click", (event) => {
                             event.stopPropagation();
-                            selectAgent(row.ip_address, tr);
-                            fetchAgentStats(row.ip_address, row.hostname);
-                        });                        
+                            selectAgent(row.ip_address, row.hostname, tr);
+                        });
+                                               
         
                         if (row.ip_address === selectedAgent) {
                             tr.classList.add("selected");
@@ -178,17 +180,19 @@
                 .catch(error => console.error('Error fetching stats:', error));
         }
 
-        function selectAgent(ip, rowElement) {
+        function selectAgent(ip, hostname, rowElement) {
             selectedAgent = ip;
+            selectedHostname = hostname;
+        
             document.querySelectorAll("tr").forEach(tr => tr.classList.remove("selected"));
             rowElement.classList.add("selected");
         
             chartsContainer.style.display = "block";
             document.getElementById("selectedServerInfo").innerHTML =
-                `<b>${rowElement.cells[0].innerText}</b> (${ip})`;
+                `<b>${hostname}</b> (${ip})`;
         
-            fetchAgentStats(ip, rowElement.cells[0].innerText);
-        }
+            fetchAgentStats(ip, hostname);
+        }        
         
 
         function fetchAgentStats(ip, hostname) {
