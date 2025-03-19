@@ -232,11 +232,10 @@
             const containersServerName = document.getElementById("containersServerName");
         
             containersContainer.style.display = "block"; 
-            containersServerName.innerText = `${hostname} (${ip})`;
+            containersServerName.innerText = `${hostname} (${ip})`; 
+            containersBody.innerHTML = ''; 
         
-            containersBody.innerHTML = '';
-        
-            if (containers && containers.length > 0) {
+            if (containers.length > 0) {
                 containers.forEach(container => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
@@ -251,7 +250,15 @@
                 containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
             }
         }
-               
+        
+        function latestContainers(data) {
+            for (let entry of data) {
+                if (entry.containers && entry.containers.length > 0) {
+                    return entry.containers;
+                }
+            }
+            return [];
+        }
         
 
         // Добавляем обработчик, который скрывает графики при клике вне таблицы и графиков
