@@ -159,7 +159,7 @@
                             event.stopPropagation();
                             selectAgent(row.ip_address, tr);
                             fetchAgentStats(row.ip_address, row.hostname);
-                        });
+                        });                        
         
                         if (row.ip_address === selectedAgent) {
                             tr.classList.add("selected");
@@ -221,7 +221,7 @@
                     // Берём первую запись (самую новую!)
                     const latestRecord = data[0];
         
-                    displayContainers(latestNonEmptyContainers(data), hostname, ip);
+                    displayContainers(latestContainers(data), hostname, ip);
                 })
                 .catch(error => console.error('Ошибка загрузки данных:', error));
         }     
@@ -231,9 +231,9 @@
             const containersBody = document.getElementById("containers-body");
             const containersServerName = document.getElementById("containersServerName");
         
-            containersContainer.style.display = "block"; 
-            containersServerName.innerText = `${hostname} (${ip})`; 
-            containersBody.innerHTML = ''; 
+            containersContainer.style.display = "block";
+            containersServerName.innerText = `${hostname} (${ip})`;
+            containersBody.innerHTML = '';
         
             if (containers.length > 0) {
                 containers.forEach(container => {
@@ -250,6 +250,7 @@
                 containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
             }
         }
+        
         
         function latestContainers(data) {
             for (let entry of data) {
