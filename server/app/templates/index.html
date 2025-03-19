@@ -140,7 +140,7 @@
 
                     data.forEach(row => {
                         const lastSeen = Math.round(row.last_seen);
-                        const isOffline = lastSeen > 60;
+                        const isOffline = lastSeen > 180;
 
                         const tr = document.createElement("tr");
                         tr.innerHTML = `
