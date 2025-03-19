@@ -15,6 +15,7 @@
 #include <cstring>
 #include <iomanip>
 #include <sstream>
+#include <fstream>
 #ifdef _WIN32
   #include <Winsock2.h>
   #include <windows.h>
@@ -66,22 +67,6 @@ std::string getIPAddress(const std::string &iface) {
     return std::string(ip);
 #endif
 }
-// Получение информации об ОС
-std::string getOSInfo() {
-    #ifdef _WIN32
-        return "Windows";
-    #else
-        std::ifstream file("/etc/os-release");
-        std::string line, os_name;
-        while (std::getline(file, line)) {
-            if (line.find("PRETTY_NAME=") == 0) {
-                os_name = line.substr(line.find("=") + 1);
-                os_name.erase(std::remove(os_name.begin(), os_name.end(), '"'), os_name.end());
-                break;
-        }
-        return os_name.empty() ? "Linux" : os_name;
-    #endif
-    }
 
 // Получение загрузки CPU
 double getCPUUsage() {
@@ -155,13 +140,35 @@ std::pair<int, int> getDiskInfoForMount(const std::string &mount) {
     #endif
     }
 
-
-    
+    std::string getOSInfo() {
+        #ifdef _WIN32
+            return "Windows";
+        #else
+            std::ifstream file("/etc/os-release");
+            if (!file.is_open()) return "Linux";
+        
+            std::string line;
+            std::string os_name = "Linux";
+            while (std::getline(file, line)) {
+                if (line.find("PRETTY_NAME=") != std::string::npos) {
+                    std::size_t start_pos = line.find('=') + 1;
+                    if (line[start_pos = line.find('"')] != std::string::npos) {
+                        os_name = line.substr(line.find('"') + 1);
+                        os_name = os_name.substr(0, os_name.find('"'));
+                    } else {
+                        os_name = line.substr(line.find('=') + 1);
+                    }
+                    break;
+                }
+            }
+        
+            return os_name;
+        #endif
+    }
 
 int main(int argc, char* argv[]) {
     // Значения по умолчанию
     std::string serverName = getHostname();
-    data["os_info"] = getOSInfo();
     std::string iface = "eth0";
     std::string mountPoint = "/";
     std::string processingURL = "http://localhost:5000/report";
@@ -216,6 +223,7 @@ int main(int argc, char* argv[]) {
         auto disk = getDiskInfoForMount(mountPoint);
         data["disk_free"] = disk.first;
         data["disk_total"] = disk.second;
+        data["os_info"] = getOSInfo();
 
         std::cout << "Собранные данные:\n" << data.dump(4) << std::endl;
 
