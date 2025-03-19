@@ -169,14 +169,19 @@ std::pair<int, int> getDiskInfoForMount(const std::string &mount) {
 
 // Сбор информации о запущенных Docker-контейнерах
 json getDockerContainersInfo() {
-    json containers = json::array();
-    FILE* pipe = popen(R"(docker stats --no-stream --format "{\"id\":\"{{.Container}}\",\"name\":\"{{.Name}}\",\"cpu_perc\":\"{{.CPUPerc}}\",\"mem_usage\":\"{{.MemUsage}}\"}")", "r");
+    FILE* pipe = popen(R"(docker ps --format "{{.ID}} {{.Image}} {{.Names}} {{.Status}}" | while read id image name status; do
+        stats=$(docker stats --no-stream --format "{{.CPUPerc}}|{{.MemUsage}}" $id);
+        cpu_perc=$(echo $stats | cut -d'|' -f1);
+        mem_usage=$(echo $stats | cut -d'|' -f2);
+        echo "{\"id\":\"$id\",\"image\":\"$image\",\"name\":\"$name\",\"status\":\"$status\",\"cpu_perc\":\"$cpu_perc\",\"mem_usage\":\"$mem_usage\"}";
+    done)", "r");
     if (!pipe) {
         perror("popen");
-        return containers;
+        return json::array();
     }
 
-    char buffer[1024];
+    json containers = json::array();
+    char buffer[2048];
     while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
         try {
             containers.push_back(json::parse(buffer));
