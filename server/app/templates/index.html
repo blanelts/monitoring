@@ -86,12 +86,40 @@
             <h3>GitLab Runner на сервере: <span id="gitlabRunnerServerName"></span></h3>
             <div id="gitlabRunnerError" class="text-warning"></div>
             <div id="gitlabRunnerData" style="display:none;">
-                <div>Состояние службы: <span id="runnerServiceStatus"></span></div>
-                <div>Установлен: <span id="runnerInstalled"></span></div>
-                <div>Версия: <span id="runnerVersion"></span></div>
-                <div>Start time: <span id="runnerStartTime"></span></div>
-                <div>Job: <span id="runnerJob"></span></div>
-        
+                
+                <!-- Таблица с общими сведениями о Runner -->
+                <table class="table table-dark table-striped">
+                    <thead>
+                        <tr>
+                            <th>Параметр</th>
+                            <th>Значение</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Состояние службы</td>
+                            <td id="runnerServiceStatus"></td>
+                        </tr>
+                        <tr>
+                            <td>Установлен</td>
+                            <td id="runnerInstalled"></td>
+                        </tr>
+                        <tr>
+                            <td>Версия</td>
+                            <td id="runnerVersion"></td>
+                        </tr>
+                        <tr>
+                            <td>Start time</td>
+                            <td id="runnerStartTime"></td>
+                        </tr>
+                        <tr>
+                            <td>Job</td>
+                            <td id="runnerJob"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Отдельная таблица для списка зарегистрированных раннеров -->
                 <h5 class="mt-3">Список зарегистрированных раннеров:</h5>
                 <table class="table table-dark table-striped">
                     <thead>
@@ -104,8 +132,7 @@
                     <tbody id="gitlabRunnerTableBody"></tbody>
                 </table>
             </div>
-        </div>
-        
+        </div>        
         
         <table class="table table-dark table-striped mt-4">
             <thead>
@@ -298,33 +325,32 @@
             const runnerJob = document.getElementById("runnerJob");
             const gitlabRunnerTableBody = document.getElementById("gitlabRunnerTableBody");
         
-            // Изначально прячем блок, чтобы он не показывался по умолчанию
+            // Изначально скрываем блоки
             gitlabRunnerContainer.style.display = "none";
             gitlabRunnerError.textContent = "";
             gitlabRunnerData.style.display = "none";
         
-            if (
-                !gitlabRunner ||        // поля нет вообще
-                gitlabRunner.installed === false  // либо runner.installed = false
-            ) {
-                // Показываем короткое сообщение на странице
-                noRunnerMsg.style.display = "block";
-                noRunnerMsg.textContent = "gitlab-runner отсутствует на сервере...";
-                return; // выходим, не показываем остальные поля
+            // Если gitlab_runner отсутствует или runner не установлен — показываем сообщение и выходим
+            // (пример условия, вы меняете под свою логику)
+            if (!gitlabRunner || gitlabRunner.installed === false) {
+                gitlabRunnerError.textContent = "GitLab Runner отсутствует на сервере...";
+                gitlabRunnerContainer.style.display = "block";
+                return;
             }
         
-            // Если Runner есть и он не 'unknown', показываем блок и заполняем детальной информацией
+            // Иначе Runner есть => показываем блок и заполняем данными
             gitlabRunnerContainer.style.display = "block";
             gitlabRunnerData.style.display = "block";
             gitlabRunnerServerName.innerText = `${hostname} (${ip})`;
         
+            // Поля таблицы
             runnerServiceStatus.textContent = gitlabRunner.active || "unknown";
             runnerInstalled.textContent = gitlabRunner.installed ? "Да" : "Нет";
             runnerVersion.textContent = gitlabRunner.version || "-";
             runnerStartTime.textContent = gitlabRunner.start_time || "-";
             runnerJob.textContent = gitlabRunner.job || "-";
         
-            // Обновляем список зарегистрированных раннеров
+            // Список зарегистрированных раннеров
             gitlabRunnerTableBody.innerHTML = "";
             const runners = gitlabRunner.runners || [];
             if (runners.length > 0) {
@@ -341,7 +367,7 @@
                 gitlabRunnerTableBody.innerHTML =
                     '<tr><td colspan="3">Нет зарегистрированных раннеров</td></tr>';
             }
-        }        
+        }   
         
         function latestContainers(data) {
             for (let entry of data) {
