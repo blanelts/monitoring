@@ -62,7 +62,7 @@ def get_stats():
                 FROM server_stats
             )
             SELECT hostname, ip_address, cpu_usage, memory_used, memory_total, 
-                   disk_free, disk_total, os_info,
+                   disk_free, disk_total, os_info, containers,
                    last_update, EXTRACT(EPOCH FROM (NOW() - last_update)) AS last_seen
             FROM ranked_stats
             WHERE row_num = 1;
@@ -73,6 +73,8 @@ def get_stats():
 
         for row in rows:
             row["status"] = "online" if row["last_seen"] < 60 else "offline"
+            # Парсим сохранённый JSON с контейнерами
+            row["containers"] = json.loads(row["containers"]) if row["containers"] else []
 
         return jsonify(rows)
     except Exception as e:
@@ -85,7 +87,7 @@ def get_agent_stats(ip_address):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT cpu_usage, memory_used, 
+            SELECT cpu_usage, memory_used, memory_total,
                    ROUND(EXTRACT(EPOCH FROM last_update) * 1000) AS last_update,
                    containers
             FROM server_stats
@@ -96,6 +98,10 @@ def get_agent_stats(ip_address):
         rows = cur.fetchall()
         cur.close()
         conn.close()
+
+        for row in rows:
+            row["containers"] = json.loads(row["containers"]) if row["containers"] else []
+
         return jsonify(rows)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
