@@ -71,10 +71,8 @@
                     <th>IP Address</th>
                     <th>OS Info</th>
                     <th>CPU Usage (%)</th>
-                    <th>Memory Used (MB)</th>
-                    <th>Memory Total (MB)</th>
-                    <th>Disk Free (GB)</th>
-                    <th>Disk Total (GB)</th>
+                    <th>RAM Free/Used/Total (MB)</th>
+                    <th>Disk Free/Used/Total (GB)</th>
                     <th>Last Connect (sec.)</th>
                 </tr>
             </thead>
@@ -129,10 +127,8 @@
                             <td>${row.ip_address}</td>
                             <td>${row.os_info}</td>
                             <td>${row.cpu_usage}</td>
-                            <td>${row.memory_used}</td>
-                            <td>${row.memory_total}</td>
-                            <td>${row.disk_free}</td>
-                            <td>${row.disk_total}</td>
+                            <td>${row.memory_total - row.memory_used} / ${row.memory_used} / ${row.memory_total}</td>
+                            <td>${row.disk_free} / ${row.disk_total - row.disk_free} / ${row.disk_total}</td>
                             <td>${lastSeen} sec. ago</td>
                         `;
                         
