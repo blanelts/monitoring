@@ -305,7 +305,7 @@
         
             // Если gitlab_runner отсутствует или статус 'unknown' – 
             // просто выходим (ничего не выводим) или выводим короткое сообщение
-            if (!gitlabRunner || gitlabRunner.active === "unknown") {
+            if (!gitlabRunner || gitlabRunner.installed === "false") {
                 console.log("gitlab-runner отсутствует на сервере...");
                 return;
             }
