@@ -191,7 +191,7 @@
         }
         
 
-        function fetchAgentStats(ip) {
+        function fetchAgentStats(ip, hostname) {
             fetch(`/stats/${ip}`)
                 .then(response => response.json())
                 .then(data => {
@@ -218,22 +218,23 @@
                     memoryChart.data.datasets[0].data = memoryData;
                     memoryChart.update();
         
-                    // Теперь вызываем отображение контейнеров
-                    const lastRecord = data[0];
-                    displayContainers(lastRecord.containers || [], lastRecord.hostname, ip);
+                    // Берём первую запись (самую новую!)
+                    const latestRecord = data[0];
+        
+                    displayContainers(latestNonEmptyContainers(data), hostname, ip);
                 })
                 .catch(error => console.error('Ошибка загрузки данных:', error));
-        }        
+        }     
 
-        function displayContainers(containers, hostname, ipAddress) {
+        function displayContainers(containers, hostname, ip) {
             const containersContainer = document.getElementById("containersContainer");
             const containersBody = document.getElementById("containers-body");
             const containersServerName = document.getElementById("containersServerName");
         
-            containersContainer.style.display = "block"; // Показываем таблицу контейнеров
-            containersServerName.innerText = `${hostname} (${ip})`; // Отображаем сервер
+            containersContainer.style.display = "block"; 
+            containersServerName.innerText = `${hostname} (${ip})`;
         
-            containersBody.innerHTML = ''; // Очищаем предыдущие данные
+            containersBody.innerHTML = '';
         
             if (containers && containers.length > 0) {
                 containers.forEach(container => {
@@ -249,7 +250,8 @@
             } else {
                 containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
             }
-        }        
+        }
+               
         
 
         // Добавляем обработчик, который скрывает графики при клике вне таблицы и графиков
