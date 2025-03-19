@@ -9,3 +9,5 @@ CREATE TABLE IF NOT EXISTS server_stats (
     disk_total INT
 );
 ALTER TABLE server_stats ADD COLUMN last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE server_stats ADD COLUMN os_info VARCHAR(100);
+

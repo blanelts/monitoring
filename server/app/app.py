@@ -32,15 +32,14 @@ def receive_report():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute(
-            """
-            INSERT INTO server_stats (hostname, ip_address, cpu_usage, memory_used, memory_total, disk_free, disk_total, last_update)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP);
-            """,
-            (data["hostname"], data["ip_address"], data["cpu_usage"],
-            data["memory_used"], data["memory_total"], data["disk_free"], data["disk_total"])
-        )
-
+        cur.execute("""
+        INSERT INTO server_stats 
+        (hostname, ip_address, cpu_usage, memory_used, memory_total, disk_free, disk_total, os_info, last_update)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+        """,
+        (data["hostname"], data["ip_address"], data["cpu_usage"],
+         data["memory_used"], data["memory_total"],
+         data["disk_free"], data["disk_total"], data["os_info"]))
         conn.commit()
         cur.close()
         conn.close()

@@ -66,6 +66,22 @@ std::string getIPAddress(const std::string &iface) {
     return std::string(ip);
 #endif
 }
+// Получение информации об ОС
+std::string getOSInfo() {
+    #ifdef _WIN32
+        return "Windows";
+    #else
+        std::ifstream file("/etc/os-release");
+        std::string line, os_name;
+        while (std::getline(file, line)) {
+            if (line.find("PRETTY_NAME=") == 0) {
+                os_name = line.substr(line.find("=") + 1);
+                os_name.erase(std::remove(os_name.begin(), os_name.end(), '"'), os_name.end());
+                break;
+        }
+        return os_name.empty() ? "Linux" : os_name;
+    #endif
+    }
 
 // Получение загрузки CPU
 double getCPUUsage() {
@@ -145,6 +161,7 @@ std::pair<int, int> getDiskInfoForMount(const std::string &mount) {
 int main(int argc, char* argv[]) {
     // Значения по умолчанию
     std::string serverName = getHostname();
+    data["os_info"] = getOSInfo();
     std::string iface = "eth0";
     std::string mountPoint = "/";
     std::string processingURL = "http://localhost:5000/report";
