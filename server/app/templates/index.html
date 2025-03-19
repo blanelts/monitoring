@@ -267,6 +267,7 @@
         // Добавляем обработчик, который скрывает графики при клике вне таблицы и графиков
         document.body.addEventListener("click", () => {
             chartsContainer.style.display = "none";
+            containersContainer.style.display = "none";
             selectedAgent = null;
             document.querySelectorAll("tr").forEach(tr => tr.classList.remove("selected"));
         });
