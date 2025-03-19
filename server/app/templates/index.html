@@ -140,6 +140,18 @@
                             event.stopPropagation(); // Предотвращаем всплытие, чтобы не срабатывал клик по body
                             selectAgent(row.ip_address, tr);
                         });
+
+                        if (row.ip_address === selectedAgent) {
+                            tr.classList.add("selected");
+        
+                            // Показываем графики, чтобы не исчезали
+                            chartsContainer.style.display = "block"; 
+        
+                            // Выводим в шапку выбранного сервера (если не делали этого раньше):
+                            document.getElementById("selectedServerInfo").innerHTML =
+                                `<b>${row.hostname}</b> (${row.ip_address})`;
+                        }
+
                         tableBody.appendChild(tr);
                     });
 
