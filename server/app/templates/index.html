@@ -131,18 +131,17 @@
         let selectedAgent = null;
         let selectedHostname = null;
 
-
         function fetchStats() {
             fetch('/stats')
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById("stats-body");
                     tableBody.innerHTML = "";
-        
+
                     data.forEach(row => {
                         const lastSeen = Math.round(row.last_seen);
                         const isOffline = lastSeen > 60;
-        
+
                         const tr = document.createElement("tr");
                         tr.innerHTML = `
                             <td>${row.hostname}</td>
@@ -153,32 +152,35 @@
                             <td>${row.disk_free} / ${row.disk_total - row.disk_free} / ${row.disk_total}</td>
                             <td>${lastSeen} sec. ago</td>
                         `;
-        
+
                         tr.classList.toggle("offline", isOffline);
                         tr.style.color = isOffline ? "red" : "white";
-        
+
+                        // Пересоздаём обработчики корректно:
                         tr.addEventListener("click", (event) => {
                             event.stopPropagation();
-                            selectAgent(row.ip_address, row.hostname, tr);
+                            selectedAgent = row.ip_address;
+                            selectedHostname = row.hostname;
+                            selectAgent(selectedAgent, tr);
+                            fetchAgentStats(selectedAgent, selectedHostname);
                         });
-                                               
-        
+
+                        // Восстанавливаем выбранный элемент
                         if (row.ip_address === selectedAgent) {
                             tr.classList.add("selected");
-                            chartsContainer.style.display = "block";
-                            document.getElementById("selectedServerInfo").innerHTML =
-                                `<b>${row.hostname}</b> (${row.ip_address})`;
                         }
-        
+
                         tableBody.appendChild(tr);
                     });
-        
-                    if (selectedAgent) {
-                        fetchAgentStats(selectedAgent);
+
+                    // При каждом обновлении, если есть выбранный сервер, загружаем его данные
+                    if (selectedAgent && selectedHostname) {
+                        fetchAgentStats(selectedAgent, selectedHostname);
                     }
                 })
                 .catch(error => console.error('Error fetching stats:', error));
         }
+
 
         function selectAgent(ip, hostname, rowElement) {
             selectedAgent = ip;
