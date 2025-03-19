@@ -370,6 +370,7 @@
         document.body.addEventListener("click", () => {
             chartsContainer.style.display = "none";
             containersContainer.style.display = "none";
+            gitlabRunnerContainer.style.display = "none";
             selectedAgent = null;
             document.querySelectorAll("tr").forEach(tr => tr.classList.remove("selected"));
         });
