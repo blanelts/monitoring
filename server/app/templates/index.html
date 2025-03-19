@@ -182,12 +182,14 @@
             selectedAgent = ip;
             document.querySelectorAll("tr").forEach(tr => tr.classList.remove("selected"));
             rowElement.classList.add("selected");
+        
             chartsContainer.style.display = "block";
-            const hostname = rowElement.cells[0].innerText;
-            const ipAddress = rowElement.cells[1].innerText;
-            document.getElementById("selectedServerInfo").innerHTML = `<b>${hostname}</b> (${ipAddress})`;
-            fetchAgentStats(ip);
+            document.getElementById("selectedServerInfo").innerHTML =
+                `<b>${rowElement.cells[0].innerText}</b> (${ip})`;
+        
+            fetchAgentStats(ip, rowElement.cells[0].innerText);
         }
+        
 
         function fetchAgentStats(ip) {
             fetch(`/stats/${ip}`)
@@ -197,35 +199,39 @@
                         console.warn("Нет данных для отображения.");
                         return;
                     }
-
+        
                     let labels = data.map(entry => new Date(parseInt(entry.last_update)).toLocaleTimeString());
                     let cpuData = data.map(entry => entry.cpu_usage);
                     let memoryData = data.map(entry => entry.memory_used);
-
+        
                     if (labels.length > 100) {
                         labels = labels.slice(-100);
                         cpuData = cpuData.slice(-100);
                         memoryData = memoryData.slice(-100);
                     }
-
+        
                     cpuChart.data.labels = labels;
                     cpuChart.data.datasets[0].data = cpuData;
                     cpuChart.update(); 
-
+        
                     memoryChart.data.labels = labels;
                     memoryChart.data.datasets[0].data = memoryData;
-                    memoryChart.update(); 
+                    memoryChart.update();
+        
+                    // Теперь вызываем отображение контейнеров
+                    const lastRecord = data[0];
+                    displayContainers(lastRecord.containers || [], lastRecord.hostname, ip);
                 })
                 .catch(error => console.error('Ошибка загрузки данных:', error));
-        }
+        }        
 
-        function displayContainers(containers, hostname, ip) {
+        function displayContainers(containers, hostname, ipAddress) {
             const containersContainer = document.getElementById("containersContainer");
             const containersBody = document.getElementById("containers-body");
-            const containersServerInfo = document.getElementById("containersServerInfo");
+            const containersServerName = document.getElementById("containersServerName");
         
-            containersContainer.style.display = "block"; // Показываем контейнеры
-            containersServerInfo.innerText = `${hostname} (${ipAddress})`; // Отображаем сервер
+            containersContainer.style.display = "block"; // Показываем таблицу контейнеров
+            containersServerName.innerText = `${hostname} (${ip})`; // Отображаем сервер
         
             containersBody.innerHTML = ''; // Очищаем предыдущие данные
         
@@ -243,7 +249,7 @@
             } else {
                 containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
             }
-        }
+        }        
         
 
         // Добавляем обработчик, который скрывает графики при клике вне таблицы и графиков
