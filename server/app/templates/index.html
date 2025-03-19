@@ -73,12 +73,10 @@
                         <th>Image</th>
                         <th>Name</th>
                         <th>Status</th>
-                        <th>CPU (%)</th>
-                        <th>RAM Usage</th>
                     </tr>
                 </thead>
                 <tbody id="containers-body"></tbody>
-            </table>            
+            </table>
         </div>
         
         <table class="table table-dark table-striped mt-4">
@@ -247,8 +245,6 @@
                         <td>${container.image}</td>
                         <td>${container.name}</td>
                         <td>${container.status}</td>
-                        <td>${container.cpu_perc}</td>
-                        <td>${container.mem_usage}</td>
                     `;
                     containersBody.appendChild(tr);
                 });
@@ -256,6 +252,7 @@
                 containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
             }
         }
+        
         
         function latestContainers(data) {
             for (let entry of data) {

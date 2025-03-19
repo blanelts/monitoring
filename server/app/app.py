@@ -30,6 +30,8 @@ def receive_report():
     if not data:
         return jsonify({"error": "Invalid JSON"}), 400
 
+    containers = data.get("containers", [])
+
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -41,7 +43,7 @@ def receive_report():
         (data["hostname"], data["ip_address"], data["cpu_usage"],
          data["memory_used"], data["memory_total"],
          data["disk_free"], data["disk_total"], data["os_info"],
-         json.dumps(data.get("containers", []))))
+         json.dumps(containers)))  # Не забудьте импортировать модуль json
         conn.commit()
         cur.close()
         conn.close()
@@ -60,7 +62,7 @@ def get_stats():
                 FROM server_stats
             )
             SELECT hostname, ip_address, cpu_usage, memory_used, memory_total, 
-                   disk_free, disk_total, os_info, containers,
+                   disk_free, disk_total, os_info,
                    last_update, EXTRACT(EPOCH FROM (NOW() - last_update)) AS last_seen
             FROM ranked_stats
             WHERE row_num = 1;
@@ -71,8 +73,6 @@ def get_stats():
 
         for row in rows:
             row["status"] = "online" if row["last_seen"] < 60 else "offline"
-            # Парсим сохранённый JSON с контейнерами
-            row["containers"] = json.loads(row["containers"]) if row["containers"] else []
 
         return jsonify(rows)
     except Exception as e:
@@ -85,7 +85,7 @@ def get_agent_stats(ip_address):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT cpu_usage, memory_used, memory_total,
+            SELECT cpu_usage, memory_used, 
                    ROUND(EXTRACT(EPOCH FROM last_update) * 1000) AS last_update,
                    containers
             FROM server_stats
@@ -96,10 +96,6 @@ def get_agent_stats(ip_address):
         rows = cur.fetchall()
         cur.close()
         conn.close()
-
-        for row in rows:
-            row["containers"] = json.loads(row["containers"]) if row["containers"] else []
-
         return jsonify(rows)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
