@@ -73,8 +73,11 @@
                         <th>Image</th>
                         <th>Name</th>
                         <th>Status</th>
+                        <th>CPU %</th>
+                        <th>Memory Usage</th>
                     </tr>
                 </thead>
+                
                 <tbody id="containers-body"></tbody>
             </table>
         </div>
@@ -245,13 +248,16 @@
                         <td>${container.image}</td>
                         <td>${container.name}</td>
                         <td>${container.status}</td>
+                        <td>${container.cpu_perc}</td>
+                        <td>${container.mem_usage}</td>
                     `;
                     containersBody.appendChild(tr);
                 });
             } else {
-                containersBody.innerHTML = '<tr><td colspan="4">Контейнеры не найдены.</td></tr>';
+                containersBody.innerHTML = '<tr><td colspan="6">Контейнеры не найдены.</td></tr>';
             }
         }
+        
         
         
         function latestContainers(data) {
