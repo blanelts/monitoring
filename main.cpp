@@ -17,6 +17,8 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <sys/stat.h>
+
 #ifdef _WIN32
   #include <Winsock2.h>
   #include <windows.h>
@@ -24,6 +26,99 @@
 #endif
 
 using json = nlohmann::json;
+
+
+bool fileExists(const std::string &filename) {
+    struct stat buffer;
+    return (stat(filename.c_str(), &buffer) == 0);
+}
+
+// Функция выполнения команд и возврата вывода
+std::string execCommand(const char* cmd) {
+    char buffer[128];
+    std::string result;
+    FILE* pipe = popen(cmd, "r");
+    if (!pipe) return "Ошибка";
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+        result += buffer;
+    }
+    pclose(pipe);
+    result.erase(result.find_last_not_of(" \n\r\t") + 1);  // Убираем лишние пробелы/переносы строк
+    return result;
+}
+
+// Парсинг конфигурации GitLab Runner
+std::vector<json> parseGitLabConfig(const std::string& configPath) {
+    std::ifstream file(configPath);
+    std::vector<json> runners;
+    if (!file.is_open()) {
+        std::cerr << "Ошибка: не удалось открыть " << configPath << std::endl;
+        return runners;
+    }
+
+    std::string line;
+    std::string name, url, executor;
+    bool inRunnerBlock = false;
+
+    while (std::getline(file, line)) {
+        line.erase(0, line.find_first_not_of(" \t"));
+        line.erase(line.find_last_not_of(" \t") + 1);
+
+        if (line == "[[runners]]") {
+            inRunnerBlock = true;
+            name.clear();
+            url.clear();
+            executor.clear();
+            continue;
+        }
+
+        if (inRunnerBlock) {
+            if (line.find("name =") == 0) {
+                name = line.substr(line.find('=') + 2);
+                name.erase(std::remove(name.begin(), name.end(), '"'), name.end());
+            } else if (line.find("url =") == 0) {
+                url = line.substr(line.find('=') + 2);
+                url.erase(std::remove(url.begin(), url.end(), '"'), url.end());
+            } else if (line.find("executor =") == 0) {
+                executor = line.substr(line.find('=') + 2);
+                executor.erase(std::remove(executor.begin(), executor.end(), '"'), executor.end());
+
+                runners.push_back({{"name", name}, {"url", url}, {"executor", executor}});
+                inRunnerBlock = false;
+            }
+        }
+    }
+    return runners;
+}
+
+// Получение данных о GitLab Runner
+json getGitLabRunnerInfo() {
+    json gitlabData;
+    gitlabData["installed"] = false;
+
+    if (system("which gitlab-runner > /dev/null 2>&1") == 0) {
+        gitlabData["installed"] = true;
+        gitlabData["version"] = execCommand("gitlab-runner --version | head -n1 | awk '{print $NF}'");
+        gitlabData["active"] = execCommand("systemctl is-active gitlab-runner");
+
+        std::string startTime = execCommand("systemctl show gitlab-runner -p ActiveEnterTimestamp | cut -d'=' -f2");
+        if (!startTime.empty()) {
+            startTime = execCommand(("date -d \"" + startTime + "\" \"+%Y-%m-%d %H:%M:%S\"").c_str());
+        } else {
+            startTime = "Неизвестно";
+        }
+        gitlabData["start_time"] = startTime;
+
+        std::string job = execCommand("gitlab-runner status 2>/dev/null | grep 'is running' | sed 's/.*job \\(.*\\) is running.*/\\1/'");
+        if (job.empty()) job = "Нет";
+        gitlabData["job"] = job;
+
+        if (fileExists("/etc/gitlab-runner/config.toml")) {
+            gitlabData["runners"] = parseGitLabConfig("/etc/gitlab-runner/config.toml");
+        }
+    }
+    return gitlabData;
+}
 
 // Функция для вывода справки по использованию программы
 void printUsage(const char* progName) {
@@ -252,6 +347,8 @@ int main(int argc, char* argv[]) {
         data["disk_total"] = disk.second;
         data["os_info"] = getOSInfo();
         data["containers"] = getDockerContainersInfo();
+
+        data["gitlab_runner"] = getGitLabRunnerInfo();
 
         std::cout << "Собранные данные:\n" << data.dump(4) << std::endl;
 

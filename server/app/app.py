@@ -31,19 +31,22 @@ def receive_report():
         return jsonify({"error": "Invalid JSON"}), 400
 
     containers = data.get("containers", [])
+    
+    gitlab_runner = data.get("gitlab_runner", {})
 
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-        INSERT INTO server_stats 
-        (hostname, ip_address, cpu_usage, memory_used, memory_total, disk_free, disk_total, os_info, containers, last_update)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
-        """,
+            INSERT INTO server_stats
+            (hostname, ip_address, cpu_usage, memory_used, memory_total, 
+             disk_free, disk_total, os_info, containers, gitlab_runner, last_update)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+            """,
         (data["hostname"], data["ip_address"], data["cpu_usage"],
          data["memory_used"], data["memory_total"],
          data["disk_free"], data["disk_total"], data["os_info"],
-         json.dumps(containers)))  # Не забудьте импортировать модуль json
+         json.dumps(containers), json.dumps(gitlab_runner)))
         conn.commit()
         cur.close()
         conn.close()
@@ -87,7 +90,8 @@ def get_agent_stats(ip_address):
         cur.execute("""
             SELECT cpu_usage, memory_used, 
                    ROUND(EXTRACT(EPOCH FROM last_update) * 1000) AS last_update,
-                   containers
+                   containers,
+                   gitlab_runner
             FROM server_stats
             WHERE ip_address = %s
             ORDER BY id DESC
