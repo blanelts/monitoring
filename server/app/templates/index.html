@@ -303,11 +303,14 @@
             gitlabRunnerError.textContent = "";
             gitlabRunnerData.style.display = "none";
         
-            // Если gitlab_runner отсутствует или статус 'unknown' – 
-            // просто выходим (ничего не выводим) или выводим короткое сообщение
-            if (!gitlabRunner || gitlabRunner.installed === "false") {
-                console.log("gitlab-runner отсутствует на сервере...");
-                return;
+            if (
+                !gitlabRunner ||        // поля нет вообще
+                gitlabRunner.installed === false  // либо runner.installed = false
+            ) {
+                // Показываем короткое сообщение на странице
+                noRunnerMsg.style.display = "block";
+                noRunnerMsg.textContent = "gitlab-runner отсутствует на сервере...";
+                return; // выходим, не показываем остальные поля
             }
         
             // Если Runner есть и он не 'unknown', показываем блок и заполняем детальной информацией
