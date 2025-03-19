@@ -156,15 +156,11 @@
                         tr.classList.toggle("offline", isOffline);
                         tr.style.color = isOffline ? "red" : "white";
 
-                        // Пересоздаём обработчики корректно:
                         tr.addEventListener("click", (event) => {
                             event.stopPropagation();
-                            selectedAgent = row.ip_address;
-                            selectedHostname = row.hostname;
-                            selectAgent(selectedAgent, tr);
-                            fetchAgentStats(selectedAgent, selectedHostname);
+                            selectAgent(row.ip_address, row.hostname, tr);
                         });
-
+                        
                         // Восстанавливаем выбранный элемент
                         if (row.ip_address === selectedAgent) {
                             tr.classList.add("selected");
@@ -194,7 +190,7 @@
                 `<b>${hostname}</b> (${ip})`;
         
             fetchAgentStats(ip, hostname);
-        }        
+        }       
         
 
         function fetchAgentStats(ip, hostname) {
