@@ -158,7 +158,7 @@
                         tr.addEventListener("click", (event) => {
                             event.stopPropagation();
                             selectAgent(row.ip_address, tr);
-                            displayContainers(row.containers || [], row.hostname, row.ip_address);
+                            fetchAgentStats(row.ip_address, row.hostname);
                         });
         
                         if (row.ip_address === selectedAgent) {
