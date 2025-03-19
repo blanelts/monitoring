@@ -30,8 +30,6 @@ def receive_report():
     if not data:
         return jsonify({"error": "Invalid JSON"}), 400
 
-    containers = data.get("containers", [])
-
     try:
         conn = get_db_connection()
         cur = conn.cursor()
@@ -43,7 +41,7 @@ def receive_report():
         (data["hostname"], data["ip_address"], data["cpu_usage"],
          data["memory_used"], data["memory_total"],
          data["disk_free"], data["disk_total"], data["os_info"],
-         json.dumps(containers)))  # Не забудьте импортировать модуль json
+         json.dumps(data.get("containers", []))))
         conn.commit()
         cur.close()
         conn.close()
