@@ -84,13 +84,14 @@
 
         <div id="gitlabRunnerContainer" class="mt-4" style="display:none;">
             <h3>GitLab Runner на сервере: <span id="gitlabRunnerServerName"></span></h3>
-            <div id="gitlabRunnerError" class="text-warning"></div>  <!-- Блок для отображения ошибки -->
-            <div id="gitlabRunnerData" style="display:none;">  <!-- Сюда уберём подробные данные -->
+            <div id="gitlabRunnerError" class="text-warning"></div>
+            <div id="gitlabRunnerData" style="display:none;">
                 <div>Состояние службы: <span id="runnerServiceStatus"></span></div>
                 <div>Установлен: <span id="runnerInstalled"></span></div>
                 <div>Версия: <span id="runnerVersion"></span></div>
                 <div>Start time: <span id="runnerStartTime"></span></div>
                 <div>Job: <span id="runnerJob"></span></div>
+        
                 <h5 class="mt-3">Список зарегистрированных раннеров:</h5>
                 <table class="table table-dark table-striped">
                     <thead>
@@ -290,29 +291,32 @@
             const gitlabRunnerError = document.getElementById("gitlabRunnerError");
             const gitlabRunnerData = document.getElementById("gitlabRunnerData");
         
-            const runnerServiceStatus    = document.getElementById("runnerServiceStatus");
-            const runnerInstalled       = document.getElementById("runnerInstalled");
-            const runnerVersion         = document.getElementById("runnerVersion");
-            const runnerStartTime       = document.getElementById("runnerStartTime");
-            const runnerJob             = document.getElementById("runnerJob");
+            const runnerServiceStatus = document.getElementById("runnerServiceStatus");
+            const runnerInstalled = document.getElementById("runnerInstalled");
+            const runnerVersion = document.getElementById("runnerVersion");
+            const runnerStartTime = document.getElementById("runnerStartTime");
+            const runnerJob = document.getElementById("runnerJob");
             const gitlabRunnerTableBody = document.getElementById("gitlabRunnerTableBody");
         
-            // Показываем основной блок
-            gitlabRunnerContainer.style.display = "block";
-            // Очищаем/Скрываем всё по умолчанию
+            // Сначала прячем контейнер – будем показывать его только если Runner есть
+            gitlabRunnerContainer.style.display = "none";
             gitlabRunnerError.innerHTML = "";
             gitlabRunnerData.style.display = "none";
         
-            // Если данных о GitLab Runner нет, или служба "unknown" – выводим одну фразу
+            // Если Runner не пришёл или состояние unknown — НЕ показываем блок, 
+            // просто выводим короткую фразу (или можно ничего не показывать)
             if (!gitlabRunner || gitlabRunner.active === "unknown") {
-                gitlabRunnerServerName.innerText = `${hostname} (${ip})`;
-                gitlabRunnerError.innerHTML = "gitlab-runner отсутствует на сервере...";
+                // Например, просто выводим где-нибудь сообщение:
+                console.log("gitlab-runner отсутствует на сервере...");
+                // Или можно сделать alert или вставить в отдельный div
                 return;
             }
         
-            // Иначе отображаем подробности
+            // Если дошли сюда — Runner есть, показываем блок
+            gitlabRunnerContainer.style.display = "block";
             gitlabRunnerData.style.display = "block";
             gitlabRunnerServerName.innerText = `${hostname} (${ip})`;
+        
             runnerServiceStatus.textContent = gitlabRunner.active || "unknown";
             runnerInstalled.textContent = gitlabRunner.installed ? "Да" : "Нет";
             runnerVersion.textContent = gitlabRunner.version || "-";
