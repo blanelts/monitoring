@@ -34,6 +34,7 @@
         }
         .selected {
             background-color: #444 !important;
+            font-weight: bold;
         }
         .offline td {
             color: red !important;
@@ -48,6 +49,7 @@
     <div class="container">
         <h1 class="text-center">Server Statistics</h1>
         <div id="chartsContainer" class="charts-container">
+            <h3 id="selectedServerInfo"></h3>
             <div class="row">
                 <div class="col-md-6">
                     <canvas id="cpuChart"></canvas>
@@ -152,7 +154,10 @@
             selectedAgent = ip;
             document.querySelectorAll("tr").forEach(tr => tr.classList.remove("selected"));
             rowElement.classList.add("selected");
-            chartsContainer.style.display = "block"; // Показываем графики
+            chartsContainer.style.display = "block";
+            const hostname = rowElement.cells[0].innerText;
+            const ipAddress = rowElement.cells[1].innerText;
+            document.getElementById("selectedServerInfo").innerHTML = `<b>${hostname}</b> (${ipAddress})`;
             fetchAgentStats(ip);
         }
 
