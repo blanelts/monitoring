@@ -91,6 +91,26 @@ std::vector<json> parseGitLabConfig(const std::string& configPath) {
     return runners;
 }
 
+std::vector<std::string> getLastGitlabRunnerLogs(int n) {
+    // Вызываем journalctl
+    // Если число строк большое, например -n 15, то получим последние 15 строк
+    std::string command = "journalctl -u gitlab-runner -n " + std::to_string(n) + " --no-pager";
+    std::string logs = execCommand(command.c_str());
+    
+    // Разбиваем результат на отдельные строки
+    std::vector<std::string> lines;
+    {
+        std::istringstream iss(logs);
+        for (std::string line; std::getline(iss, line); ) {
+            // Убираем \r, \n и лишние пробелы справа/слева при желании
+            if (!line.empty()) {
+                lines.push_back(line);
+            }
+        }
+    }
+    return lines;
+}
+
 // Получение данных о GitLab Runner
 json getGitLabRunnerInfo() {
     json gitlabData;
@@ -109,9 +129,15 @@ json getGitLabRunnerInfo() {
         }
         gitlabData["start_time"] = startTime;
 
-        std::string job = execCommand("gitlab-runner status 2>/dev/null | grep 'is running' | sed 's/.*job \\(.*\\) is running.*/\\1/'");
-        if (job.empty()) job = "Нет";
-        gitlabData["job"] = job;
+        // Получаем последние 15 строк лога
+        auto logsVector = getLastGitlabRunnerLogs(15);
+
+        // Кладём их в JSON-массив (который хранится в поле "job")
+        json logsJson = json::array();
+        for (auto &line : logsVector) {
+            logsJson.push_back(line);
+        }
+        gitlabData["job"] = logsJson;
 
         if (fileExists("/etc/gitlab-runner/config.toml")) {
             gitlabData["runners"] = parseGitLabConfig("/etc/gitlab-runner/config.toml");
