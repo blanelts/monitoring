@@ -52,7 +52,7 @@ export function selectAgent(ip, hostname, rowElement) {
   document.getElementById("chartsContainer").style.display = "block";
   document.getElementById("selectedServerInfo").innerHTML = `<b>${hostname}</b> (${ip})`;
 
-  updateAgentData(ip);
+  updateAgentData(ip, hostname);
 }
 
 async function updateAgentData(ip) {
