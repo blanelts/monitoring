@@ -197,6 +197,25 @@
     let selectedAgent = null;
     let selectedHostname = null;
 
+    //Конвертирование времени
+    function formatLastSeen(seconds) {
+        if (seconds < 60) {
+            return seconds + " sec ago";
+        } else if (seconds < 3600) {
+            return Math.floor(seconds / 60) + " min ago";
+        } else if (seconds < 86400) {
+            return Math.floor(seconds / 3600) + " hr ago";
+        } else if (seconds < 604800) {
+            return Math.floor(seconds / 86400) + " days ago";
+        } else if (seconds < 2592000) {
+            return Math.floor(seconds / 604800) + " weeks ago";
+        } else if (seconds < 31536000) {
+            return Math.floor(seconds / 2592000) + " months ago";
+        } else {
+            return Math.floor(seconds / 31536000) + " years ago";
+        }
+    }
+
     // Запрашиваем список агентов (общая таблица)
     function fetchStats() {
       fetch('/stats')
@@ -217,7 +236,7 @@
               <td>${row.cpu_usage}</td>
               <td>${row.memory_total - row.memory_used} / ${row.memory_used} / ${row.memory_total}</td>
               <td>${row.disk_free} / ${row.disk_total - row.disk_free} / ${row.disk_total}</td>
-              <td>${lastSeen} sec. ago</td>
+              <td>${formatLastSeen(lastSeen)}</td>
             `;
             tr.classList.toggle("offline", isOffline);
             tr.style.color = isOffline ? "red" : "white";
