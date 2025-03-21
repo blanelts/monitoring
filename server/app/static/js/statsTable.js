@@ -55,7 +55,7 @@ export function selectAgent(ip, hostname, rowElement) {
   updateAgentData(ip, hostname);
 }
 
-async function updateAgentData(ip) {
+async function updateAgentData(ip, hostname) {
   const data = await fetchAgentStats(ip);
   if (data.length === 0) return;
 
