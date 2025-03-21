@@ -1,6 +1,6 @@
 // main.js
 import { fetchStats } from './apiService.js';
-import { renderStatsTable, selectedAgent, selectedHostname } from './statsTable.js';
+import { renderStatsTable, selectedAgent, selectedHostname } from './static/js/statsTable.js';
 
 // Скрытие панелей при клике вне них
 document.body.addEventListener("click", () => {
