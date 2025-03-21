@@ -1,0 +1,48 @@
+/* static/css/style.css */
+body {
+    background-color: #121212;
+    color: white;
+  }
+  
+  .container {
+    margin-top: 30px;
+  }
+  
+  table {
+    margin-top: 20px;
+  }
+  
+  .charts-container {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    background: #1e1e1e;
+    border-radius: 8px;
+  }
+  
+  .charts-container canvas {
+    width: 100% !important;
+    height: 300px !important;
+  }
+  
+  canvas {
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .selected {
+    border: 2px solid #ffd54f;
+    font-weight: bold;
+    background-color: #333 !important;
+  }
+  
+  .selected td {
+    border-radius: 4px;
+  }
+  
+  .offline td {
+    color: red !important;
+    font-weight: bold !important;
+  }
+  
